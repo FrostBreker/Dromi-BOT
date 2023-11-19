@@ -1,0 +1,21 @@
+19/11/2023 17:11:21 => Mongoose is connected!
+19/11/2023 17:11:21 --> Commande chargée [🛢️] : twitch 
+_______________________________________
+19/11/2023 17:11:21 --> Commande chargée [🛢️] : send-image 
+_______________________________________
+19/11/2023 17:11:21 --> Commande chargée [🛢️] : setup 
+_______________________________________
+19/11/2023 17:11:21 --> Commande chargée [🛢️] : set 
+_______________________________________
+19/11/2023 17:11:21 --> Commande chargée [🛢️] : news 
+_______________________________________
+19/11/2023 17:11:21 --> Started refreshing application (/) commands.
+19/11/2023 17:11:21 --> events Chargé [🛄] : interactionCreate
+19/11/2023 17:11:21 --> events Chargé [🛄] : inviteCreate
+19/11/2023 17:11:21 --> events Chargé [🛄] : guildMemberRemove
+19/11/2023 17:11:21 --> events Chargé [🛄] : inviteDelete
+19/11/2023 17:11:21 --> events Chargé [🛄] : guildMemberAdd
+19/11/2023 17:11:21 --> events Chargé [🛄] : ready
+19/11/2023 17:11:21 --> Successfully reloaded application (/) commands.
+19/11/2023 17:11:22 --> FrostBreker's Bot#8515 is online!
+19/11/2023 17:11:22 --> Twitch API initialized

@@ -1,0 +1,28 @@
+{
+  "name": "dromi-bot",
+  "version": "1.0.0",
+  "description": "dromi-bot",
+  "main": "main.js",
+  "scripts": {
+    "start": "node --require ./utils/warnings/suppress-experimental-warnings.js main.js",
+    "dev": "nodemon ."
+  },
+  "keywords": [],
+  "author": {
+    "name": "FrostBreker",
+    "url": "https://github.com/FrostBreker"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/builders": "^1.6.3",
+    "@discordjs/rest": "^1.7.1",
+    "@napi-rs/canvas": "^0.1.44",
+    "axios": "^1.5.1",
+    "discord-api-types": "^0.37.42",
+    "discord.js": "^14.13.0",
+    "dotenv": "^16.0.3",
+    "glob": "^10.2.2",
+    "mongoose": "^7.1.1",
+    "node-cron": "^3.0.2"
+  }
+}
