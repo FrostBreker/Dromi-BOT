@@ -1,4 +1,5 @@
 const { errorCommand, newsMakerEmbed, successCommand } = require("../../embeds/Misc");
+const { getNotificationRoleSelectMenu } = require("../../selectMenus/Misc");
 
 module.exports = {
     name: "interactionCreate",
@@ -28,7 +29,7 @@ module.exports = {
                 const channel = await guild.channels.fetch(channelId);
                 if (!channel) return interaction.reply({ embeds: [errorCommand("Error", "The news channel is not set")], ephemeral: true });
                 return await channel.send({
-                    content: "@everyone",
+                    content: `<@&${guildDB.settings.roles.newsRoleId}>`,
                     embeds: [await newsMakerEmbed(interaction.guild, title, description, image, thumbnail)],
                 }).then(async () => {
                     return await interaction.reply({ embeds: [successCommand("Success", "The news has been sent")], ephemeral: true });
@@ -51,6 +52,22 @@ module.exports = {
                 return await member.roles.add(role).then((m) => {
                     return interaction.reply({ embeds: [successCommand("Success", `You've successfully accepted the rules and receive <@&${roleId}>!`)], ephemeral: true });
                 })
+            }
+        } else if (interaction.isStringSelectMenu()) {
+            const customId = interaction.customId.split("-");
+            if (customId[0] === "notificationRoleMenuChooser") {
+                const guild = interaction.guild;
+                const guildDB = await client.getGuild(guild);
+                await interaction.message.edit({ components: [getNotificationRoleSelectMenu(guildDB.settings.roles)] });
+                const rolesId = interaction.values;
+                const member = interaction.member;
+
+                for (id of rolesId) {
+                    const role = await guild.roles.fetch(id);
+                    if (!role) return interaction.reply({ embeds: [errorCommand("Error", "The role does not exist")], ephemeral: true });
+                    await member.roles.add(role);
+                }
+                return interaction.reply({ embeds: [successCommand("Success", `You've successfully received the roles!`)], ephemeral: true });
             }
         }
     }

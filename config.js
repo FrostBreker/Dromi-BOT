@@ -90,6 +90,8 @@ module.exports = {
             twitch: "📺",
             rules: "📒",
             notification: "🔔",
+            boost: "🔮",
+            choose: "📥",
         },
         footer: {
             name: null,

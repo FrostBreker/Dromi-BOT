@@ -46,6 +46,28 @@ module.exports = {
                 )
                 .addSubcommand(subcommand =>
                     subcommand
+                        .setName("youtube")
+                        .setDescription("Set the youtube notification role")
+                        .addRoleOption(option =>
+                            option
+                                .setName("role")
+                                .setDescription("The youtube notification role")
+                                .setRequired(true)
+                        )
+                )
+                .addSubcommand(subcommand =>
+                    subcommand
+                        .setName("news-role")
+                        .setDescription("Set the news notification role")
+                        .addRoleOption(option =>
+                            option
+                                .setName("role")
+                                .setDescription("The news notification role")
+                                .setRequired(true)
+                        )
+                )
+                .addSubcommand(subcommand =>
+                    subcommand
                         .setName("member")
                         .setDescription("Set the member role")
                         .addRoleOption(option =>
@@ -96,6 +118,18 @@ module.exports = {
                                 .addChannelTypes(ChannelType.GuildText)
                         )
                 )
+                .addSubcommand(subcommand =>
+                    subcommand
+                        .setName("boost")
+                        .setDescription("Set the boost channel")
+                        .addChannelOption(option =>
+                            option
+                                .setName("channel")
+                                .setDescription("The boost channel")
+                                .setRequired(true)
+                                .addChannelTypes(ChannelType.GuildText)
+                        )
+                )
         ),
     runSlash: async (client, interaction) => {
         const subGroup = interaction.options.getSubcommandGroup();
@@ -114,6 +148,14 @@ module.exports = {
                     }
                     case "twitch": {
                         SetRole(client, interaction, "twitchRoleId", "twitch");
+                        break;
+                    }
+                    case "youtube": {
+                        SetRole(client, interaction, "youtubeRoleId", "youtube");
+                        break;
+                    }
+                    case "news": {
+                        SetRole(client, interaction, "newsRoleId", "news");
                         break;
                     }
                     case "member": {
@@ -136,6 +178,10 @@ module.exports = {
                     }
                     case "news": {
                         SetChannel(client, interaction, "newsChannelId", "news");
+                        break;
+                    }
+                    case "boost": {
+                        SetChannel(client, interaction, "boostChannelId", "boost");
                         break;
                     }
                     default:

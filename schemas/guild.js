@@ -11,6 +11,8 @@ const guildSchema = mongoose.Schema({
           administatorRoleId: String,
           dromiRoleId: String,
           twitchRoleId: String,
+          youtubeRoleId: String,
+          newsRoleId: String,
           memberRoleId: String,
         }
       },
@@ -24,6 +26,10 @@ const guildSchema = mongoose.Schema({
             type: String,
             default: null,
           },
+          chooseRoleChannelId: {
+            type: String,
+            default: null,
+          },
           justJoinedChannelId: {
             type: String,
             default: null,
@@ -33,6 +39,10 @@ const guildSchema = mongoose.Schema({
             default: null,
           },
           newsChannelId: {
+            type: String,
+            default: null,
+          },
+          boostChannelId: {
             type: String,
             default: null,
           },

@@ -41,6 +41,26 @@ class MiscEmbed {
             })
             .setTimestamp();
     }
+
+    static async boostServer(user) {
+        return new EmbedBuilder()
+            .setTitle(`> ${embedOptions.icons.boost} Merci à ${user.username} pour son boost !`)
+            .setDescription(`<@${user.id}> vient de **booster** notre serveur !\n\nMerci à lui !`)
+            .setColor(embedOptions.colors.purple)
+            .setThumbnail(await user.avatarURL({ dynamic: true }))
+            .setImage("https://support.discord.com/hc/article_attachments/360013500032/nitro_gif.gif")
+            .setTimestamp();
+    }
+
+    static async chooseRoleEmbed(guild) {
+        return new EmbedBuilder()
+            .setTitle(`> ${embedOptions.icons.choose} Choisissez vos rôles`)
+            .setDescription(`Choisissez vos rôles en cliquant sur les menus ci-dessous !`)
+            .setColor(embedOptions.colors.info)
+            .setThumbnail(await guild.iconURL({ dynamic: true }))
+            .setImage("https://cdn-longterm.mee6.xyz/plugins/embeds/images/830547170980921346/f69fb42dbe18a94a014ac690d1c4998fb22cf77aa3417c6d1da1e3a5a634a9f5.png")
+            .setTimestamp();
+    }
 }
 
 module.exports = MiscEmbed;
