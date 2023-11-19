@@ -2,3 +2,4 @@
 /node_modules
 /.yaml
 /logs/*.log
+/config.js
