@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const fs = require('fs');
 const { Guild, User, Streamer } = require('../schemas');
+const moment = require("moment");
 
 module.exports = async client => {
     //GUILDS FUNCTIONS
@@ -122,6 +123,66 @@ module.exports = async client => {
         }
     }
 
+    //XP FUNCTIONS
+
+    //calculate remaining xp to next levelm
+    client.calculateRemainingXpToNextLevel = (xp) => {
+        if (xp < 200) return 200 - xp;
+        const rank = client.calculateXpLevel(xp);
+        const nextRank = rank + 1;
+        const nextRankXp = client.calculatePointsByRank(nextRank);
+        return nextRankXp - xp;
+    }
+
+    //Calculate points by rank
+    client.calculatePointsByRank = (rank) => {
+        if (rank === 0) return 200;
+        return 200 + (rank - 1) * 100;
+    };
+
+    //Calculate XP level
+    client.calculateXpLevel = (xp) => {
+        if (xp < 200) return 0;
+        //Always round down
+        return Math.floor((xp - 200) / 100 + 1);
+    };
+
+    //Add xp to a user
+    client.addXpToUser = async (user, amount, type) => {
+        try {
+            if (client.isEmpty(user)) return null;
+            if (amount <= 0) return 401;
+            let hasPassed = false;
+            if (type === "chat") {
+                const oldRank = client.calculateXpLevel(user.chatTotalXp);
+                user.messageActivity.chatTotalXp += amount;
+                const newRank = client.calculateXpLevel(user.chatTotalXp);
+                if (newRank > oldRank) {
+                    hasPassed = true;
+                    user.messageActivity.chatLevel = newRank;
+                }
+            } else {
+                const oldRank = client.calculateXpLevel(user.voiceTotalXp);
+                user.voiceActivity.voiceTotalXp += amount;
+                const newRank = client.calculateXpLevel(user.voiceTotalXp);
+                if (newRank > oldRank) {
+                    hasPassed = true;
+                    user.voiceActivity.voiceLevel = newRank;
+                }
+            }
+            return await user.save().then(u => {
+                console.log(`${client.timestampParser()} --> User xp updated -> <@${u.userId}>`)
+                return {
+                    newUserDB: u,
+                    hasPassed: hasPassed
+                }
+            });
+        } catch (err) {
+            console.log(err);
+            return null;
+        }
+    };
+
     //STREAMER FUNCTIONS
     //Create streamer
     client.createStreamer = async (guildId, { userId, username, twitchId, twitchUsername, notification }) => {
@@ -201,6 +262,342 @@ module.exports = async client => {
         }
     };
 
+    //STATS FUNCTIONS
+    //Create a stats
+    client.createStats = async (guildDB) => {
+        try {
+            if (!guildDB) return null;
+            guildDB.chatStats.push({
+                timestamp: Date.now(),
+                messagesPerUsers: []
+            });
+            guildDB.voicesStats.push({
+                timestamp: Date.now(),
+                usersPerChannel: []
+            });
+            return await guildDB.save().then(g => {
+                console.log(`${client.timestampParser()} --> New stats created -> ${g.guildId} (${g._id})`)
+                return g
+            });
+        } catch (err) {
+            console.log(err);
+            return null;
+        }
+    };
+
+    //Get last stats
+    client.getLastStats = async (guildDB, type) => {
+        try {
+            if (!guildDB) return null;
+            if (type === "chat") {
+                const lastStats = guildDB.chatStats[guildDB.chatStats.length - 1];
+                return lastStats;
+            } else if (type === "voices") {
+                const lastStats = guildDB.voicesStats[guildDB.voicesStats.length - 1];
+                return lastStats;
+            } else return null;
+        } catch (err) {
+            return null;
+        }
+    }
+
+    //Update stats by userId and type
+    client.updateStats = async (guildDB, userId, type, options) => {
+        try {
+            if (!guildDB) return null;
+            if (!userId) return null;
+            if (!type) return null;
+            if (!options) return null;
+
+            if (type === "chat") {
+                const lastStats = guildDB.chatStats[guildDB.chatStats.length - 1];
+                const user = lastStats.messagesPerUsers.find(u => u.userId === userId);
+                if (!user) {
+                    lastStats.messagesPerUsers.push({
+                        userId: userId,
+                        channels: [{
+                            channelId: options.channelId,
+                            messages: 1
+                        }]
+                    });
+                } else {
+                    const channel = user.channels.find(c => c.channelId === options.channelId);
+                    if (!channel) {
+                        user.channels.push({
+                            channelId: options.channelId,
+                            messages: 1
+                        });
+                    } else {
+                        channel.messages += 1;
+                    }
+                }
+            } else if (type === "voices") {
+                const lastStats = guildDB.voicesStats[guildDB.voicesStats.length - 1];
+                const user = lastStats.usersPerChannel.find(u => u.userId === userId);
+                if (!user) {
+                    lastStats.usersPerChannel.push({
+                        userId: userId,
+                        channels: [{
+                            channelId: options.channelId,
+                            time: options.time
+                        }]
+                    });
+                } else {
+                    const channel = user.channels.find(c => c.channelId === options.channelId);
+                    if (!channel) {
+                        user.channels.push({
+                            channelId: options.channelId,
+                            time: options.time
+                        });
+                    } else {
+                        if (options.time) channel.time += options.time;
+                    }
+                }
+            } else return null;
+            return await guildDB.save().then(g => {
+                console.log(`${client.timestampParser()} --> Stats updated -> ${g.guildName} (${g._id})`)
+                return g
+            });
+        } catch (err) {
+            return null;
+        }
+    };
+
+    //User get stats (chat: most used channel with messages, voices: most used channel with time and all messages sent, and all time in vc) Send everythign in object, calculate the stats and return it in an object, no type
+    client.getUserStats = async (guildDB, userId) => {
+        try {
+            if (!guildDB) return null;
+            if (!userId) return null;
+            //Calculate :
+            //Chat:
+            //      - Most used CHannel
+            //      - Number of messages sent in this channel
+            //      - Number of messages sent in all channels all time
+            //Voices:
+            //      - Most used Channel
+            //      - Time spent in this channel
+            //      - Time spent in all channels all time
+
+            const chatStats = guildDB.chatStats;
+            const voicesStats = guildDB.voicesStats;
+
+            const userChatStats = chatStats.map(s => {
+                const user = s.messagesPerUsers.find(u => u.userId === userId);
+                if (!user) return null;
+                const channels = user.channels;
+                const totalMessages = channels.reduce((a, b) => a + b.messages, 0);
+                return {
+                    timestamp: s.timestamp,
+                    totalMessages: totalMessages,
+                    channels: channels
+                }
+            }).filter(s => s !== null);
+
+            const userVoicesStats = voicesStats.map(s => {
+                const user = s.usersPerChannel.find(u => u.userId === userId);
+                if (!user) return null;
+                const channels = user.channels;
+                const totalTime = channels.reduce((a, b) => a + b.time, 0);
+                return {
+                    timestamp: s.timestamp,
+                    totalTime: totalTime,
+                    channels: channels
+                }
+            }).filter(s => s !== null);
+
+            const chatStatsResult = {
+                mostUsedChannel: null,
+                totalMessages: 0,
+                channels: []
+            };
+
+            const voicesStatsResult = {
+                mostUsedChannel: null,
+                totalTime: 0,
+                channels: []
+            };
+
+            if (userChatStats.length > 0) {
+                const channels = userChatStats.map(s => s.channels).flat();
+                const mostUsedChannel = channels.sort((a, b) => b.messages - a.messages)[0];
+                chatStatsResult.mostUsedChannel = mostUsedChannel;
+                chatStatsResult.totalMessages = userChatStats.reduce((a, b) => a + b.totalMessages, 0);
+                chatStatsResult.channels = channels;
+            }
+
+            if (userVoicesStats.length > 0) {
+                const channels = userVoicesStats.map(s => s.channels).flat();
+                const mostUsedChannel = channels.sort((a, b) => b.time - a.time)[0];
+                voicesStatsResult.mostUsedChannel = mostUsedChannel;
+                voicesStatsResult.totalTime = userVoicesStats.reduce((a, b) => a + b.totalTime, 0);
+                voicesStatsResult.channels = channels;
+            }
+
+            return {
+                chat: chatStatsResult,
+                voices: voicesStatsResult
+            };
+        } catch (err) {
+            return null;
+        }
+    };
+
+    //Get top 10 users with most messages sent Lifetime
+    client.getTop10UsersWithMostMessagesLifetime = async (guildDB) => {
+        try {
+            if (!guildDB) return null;
+            const chatStats = guildDB.chatStats;
+            const users = chatStats.map(s => s.messagesPerUsers).flat();
+            const usersWithTotalMessages = users.map(u => {
+                const channels = u.channels;
+                const totalMessages = channels.reduce((a, b) => a + b.messages, 0);
+                return {
+                    userId: u.userId,
+                    totalMessages: totalMessages
+                }
+            });
+
+            const filtered = usersWithTotalMessages.reduce((acc, current) => {
+                const x = acc.find(item => item.userId === current.userId);
+                if (!x) {
+                    return acc.concat([current]);
+                } else {
+                    acc.map(a => {
+                        if (a.userId === current.userId) {
+                            a.totalMessages += current.totalMessages;
+                        }
+                    });
+                    return acc;
+                }
+            }, []);
+
+            const usersWithTotalMessagesSorted = filtered.sort((a, b) => b.totalMessages - a.totalMessages);
+            const top10 = usersWithTotalMessagesSorted.slice(0, 10);
+            return top10;
+        } catch (err) {
+            return null;
+        }
+    };
+
+    //Get top 10 users with most messages sent on this week
+    client.getTop10UsersWithMostMessagesThisWeek = async (guildDB) => {
+        try {
+            if (!guildDB) return null;
+            const chatStats = guildDB.chatStats;
+            const startOfWeek = moment().startOf('week'); // Start of the current week (Monday)
+            const endOfWeek = moment().endOf('day'); // End of the current day
+
+            const filteredChatStats = chatStats.filter(stat => moment(parseInt(stat.timestamp)).isBetween(startOfWeek, endOfWeek));
+
+            const users = filteredChatStats.map(s => s.messagesPerUsers).flat();
+            const usersWithTotalMessages = users.map(u => {
+                const channels = u.channels;
+                const totalMessages = channels.reduce((a, b) => a + b.messages, 0);
+                return {
+                    userId: u.userId,
+                    totalMessages: totalMessages
+                };
+            });
+            const filtered = usersWithTotalMessages.reduce((acc, current) => {
+                const x = acc.find(item => item.userId === current.userId);
+                if (!x) {
+                    return acc.concat([current]);
+                } else {
+                    acc.map(a => {
+                        if (a.userId === current.userId) {
+                            a.totalMessages += current.totalMessages;
+                        }
+                    });
+                    return acc;
+                }
+            }, []);
+
+            const usersWithTotalMessagesSorted = filtered.sort((a, b) => b.totalMessages - a.totalMessages);
+            const top10 = usersWithTotalMessagesSorted.slice(0, 10);
+            return top10;
+        } catch (err) {
+            return null;
+        }
+    };
+
+    //Get top 10 users with most time spent in voice channels Lifetime
+    client.getTop10UsersWithMostTimeSpentInVoiceChannelsLifetime = async (guildDB) => {
+        try {
+            if (!guildDB) return null;
+            const voicesStats = guildDB.voicesStats;
+            const users = voicesStats.map(s => s.usersPerChannel).flat();
+            const usersWithTotalTime = users.map(u => {
+                const channels = u.channels;
+                const totalTime = channels.reduce((a, b) => a + b.time, 0);
+                return {
+                    userId: u.userId,
+                    totalTime: totalTime
+                }
+            });
+
+            const filtered = usersWithTotalTime.reduce((acc, current) => {
+                const x = acc.find(item => item.userId === current.userId);
+                if (!x) {
+                    return acc.concat([current]);
+                } else {
+                    acc.map(a => {
+                        if (a.userId === current.userId) {
+                            a.totalTime += current.totalTime;
+                        }
+                    });
+                    return acc;
+                }
+            }, []);
+
+            const usersWithTotalTimeSorted = filtered.sort((a, b) => b.totalTime - a.totalTime);
+            const top10 = usersWithTotalTimeSorted.slice(0, 10);
+            return top10;
+        } catch (err) {
+            return null;
+        }
+    };
+
+    //Get top 10 users with most time spent in voice channels on this week
+    client.getTop10UsersWithMostTimeSpentInVoiceChannelsThisWeek = async (guildDB) => {
+        try {
+            if (!guildDB) return null;
+            const voicesStats = guildDB.voicesStats;
+            const startOfWeek = moment().startOf('week'); // Start of the current week (Monday)
+            const endOfWeek = moment().endOf('day'); // End of the current day
+
+            const filteredVoicesStats = voicesStats.filter(stat => moment(parseInt(stat.timestamp)).isBetween(startOfWeek, endOfWeek));
+
+            const users = filteredVoicesStats.map(s => s.usersPerChannel).flat();
+            const usersWithTotalTime = users.map(u => {
+                const channels = u.channels;
+                const totalTime = channels.reduce((a, b) => a + b.time, 0);
+                return {
+                    userId: u.userId,
+                    totalTime: totalTime
+                }
+            });
+
+            const filtered = usersWithTotalTime.reduce((acc, current) => {
+                const x = acc.find(item => item.userId === current.userId);
+                if (!x) {
+                    return acc.concat([current]);
+                } else {
+                    acc.map(a => {
+                        if (a.userId === current.userId) {
+                            a.totalTime += current.totalTime;
+                        }
+                    });
+                    return acc;
+                }
+            }, []);
+
+            const usersWithTotalTimeSorted = filtered.sort((a, b) => b.totalTime - a.totalTime);
+            const top10 = usersWithTotalTimeSorted.slice(0, 10);
+            return top10;
+        } catch (err) {
+            return null;
+        }
+    };
 
     //SETTINGS FUNCTIONS
 
@@ -385,5 +782,25 @@ module.exports = async client => {
             console.log(err);
             return null;
         }
+    };
+
+    //Convert ms to time if only second return only second if only minute return only minute etc...
+    client.convertMsToTime = (ms) => {
+        if (ms === 0) return "0 second(s)"
+        const seconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+
+        const secondsLeft = seconds % 60;
+        const minutesLeft = minutes % 60;
+        const hoursLeft = hours % 24;
+
+        const daysStr = days ? `${days} day${days > 1 ? "s" : ""}` : "";
+        const hoursStr = hoursLeft ? `${hoursLeft} hour${hoursLeft > 1 ? "s" : ""}` : "";
+        const minutesStr = minutesLeft ? `${minutesLeft} minute${minutesLeft > 1 ? "s" : ""}` : "";
+        const secondsStr = secondsLeft ? `${secondsLeft} second${secondsLeft > 1 ? "s" : ""}` : "";
+
+        return `${daysStr} ${hoursStr} ${minutesStr} ${secondsStr}`;
     };
 };

@@ -2,6 +2,10 @@ module.exports = {
     clientId: "657310407786233875",
     guildId: "588359330701639716",
     timezone: "Europe/Paris",
+    xp: {
+        voice: 1.5, //per minute
+        chat: 5, //per message and per minute
+    },
     embedOptions: {
         colors: {
             success: 2336090,
@@ -92,6 +96,8 @@ module.exports = {
             notification: "🔔",
             boost: "🔮",
             choose: "📥",
+            sound: "🔊",
+            message: "💬",
         },
         footer: {
             name: null,

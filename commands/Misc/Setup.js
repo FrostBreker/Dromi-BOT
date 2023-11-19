@@ -1,55 +1,68 @@
 const { SlashCommandBuilder, ChannelType } = require("discord.js");
-const { errorCommand, successCommand, rulesEmbed, chooseRoleEmbed } = require("../../embeds/Misc");
-const { acceptRulesButton } = require("../../buttons/Misc");
-const { getNotificationRoleSelectMenu, getRolesSelectMenu } = require("../../selectMenus/Misc");
+const { SetupRules } = require("../../commandsAction/Misc/Setup/SetupRules");
+const { SetupChooseChannel } = require("../../commandsAction/Misc/Setup/SetupChooseChannel");
+const { SetupStats } = require("../../commandsAction/Misc/Setup/SetupStats");
+const { SetupLeaderboards } = require("../../commandsAction/Misc/Setup/SetupLeaderboards");
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("setup")
         .setDescription("Setup the guild")
         .setDefaultMemberPermissions(8)
-        .addChannelOption((option) =>
-            option
+        .addSubcommand((subcommand) =>
+            subcommand
                 .setName("rules")
-                .setDescription("Rules channel")
-                .setRequired(false)
-                .addChannelTypes(ChannelType.GuildText)
+                .setDescription("Setup the rules channel")
+                .addChannelOption((option) =>
+                    option
+                        .setName("channel")
+                        .setDescription("Rules channel")
+                        .setRequired(true)
+                        .addChannelTypes(ChannelType.GuildText)
+                )
         )
-        .addChannelOption((option) =>
-            option
+        .addSubcommand((subcommand) =>
+            subcommand
                 .setName("choose")
-                .setDescription("Choose role channel")
-                .setRequired(false)
-                .addChannelTypes(ChannelType.GuildText)
+                .setDescription("Setup the choose role channel")
+                .addChannelOption((option) =>
+                    option
+                        .setName("channel")
+                        .setDescription("Choose role channel")
+                        .setRequired(true)
+                        .addChannelTypes(ChannelType.GuildText)
+                )
+        )
+        .addSubcommand((subcommand) =>
+            subcommand
+                .setName("stats")
+                .setDescription("Initialize the stats")
+        )
+        .addSubcommand((subcommand) =>
+            subcommand
+                .setName("leaderboards")
+                .setDescription("Setup the leaderboard channel")
+                .addChannelOption((option) =>
+                    option
+                        .setName("channel")
+                        .setDescription("Leaderboard channel")
+                        .setRequired(true)
+                        .addChannelTypes(ChannelType.GuildText)
+                )
         ),
     runSlash: async (client, interaction) => {
-        const ruleChannel = interaction.options.getChannel("rules");
-        const chooseChannel = interaction.options.getChannel("choose");
-
-        const guildDB = await client.getGuild(interaction.guild);
-        if (!guildDB) return interaction.reply({ embeds: [errorCommand("Error", "An error occurred while getting the guild data")], ephemeral: true });
-
-        if (ruleChannel) {
-            const updateRulesChannel = await client.settingsSetter(guildDB._id, `channels.rulesChannelId`, ruleChannel.id);
-            if (!updateRulesChannel) return interaction.reply({ embeds: [errorCommand("Error", "An error occurred while updating the guild data")] });
-
-            await ruleChannel.send({
-                embeds: [await rulesEmbed(interaction.guild)],
-                components: [acceptRulesButton()],
-            });
+        const subcommand = interaction.options.getSubcommand();
+        switch (subcommand) {
+            case "rules":
+                return SetupRules(client, interaction);
+            case "choose":
+                return SetupChooseChannel(client, interaction);
+            case "stats":
+                return SetupStats(client, interaction);
+            case "leaderboards":
+                return SetupLeaderboards(client, interaction);
+            default:
+                break;
         }
-
-        if (chooseChannel) {
-            const roles = guildDB.settings.roles;
-            const updateChooseChannel = await client.settingsSetter(guildDB._id, `channels.chooseRoleChannelId`, chooseChannel.id);
-            if (!updateChooseChannel) return interaction.reply({ embeds: [errorCommand("Error", "An error occurred while updating the guild data")] });
-
-            await chooseChannel.send({
-                embeds: [await chooseRoleEmbed(interaction.guild)],
-                components: [getNotificationRoleSelectMenu(roles)],
-            });
-        }
-
-        return interaction.reply({ embeds: [successCommand("Success", `The guild has been successfully setup!`)], ephemeral: true });
     },
 };

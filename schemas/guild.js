@@ -69,6 +69,50 @@ const guildSchema = mongoose.Schema({
         },
       }
     },
+  },
+  chatStats: {
+    type: [{
+      timestamp: String,
+      messagesPerUsers: {
+        type: [{
+          userId: String,
+          channels: {
+            type: [{
+              channelId: String,
+              messages: Number
+            }]
+          },
+        }]
+      }
+    }]
+  },
+  voicesStats: {
+    type: [{
+      timestamp: String,
+      usersPerChannel: {
+        type: [{
+          userId: String,
+          channels: {
+            type: [{
+              channelId: String,
+              time: Number
+            }]
+          },
+        }]
+      }
+    }]
+  },
+  leaderboards: {
+    type: {
+      channelId: {
+        type: String,
+        default: null,
+      },
+      messageId: {
+        type: String,
+        default: null,
+      },
+    }
   }
 },
   {

@@ -11,26 +11,34 @@ const userSchema = mongoose.Schema({
   },
   voiceActivity: {
     type: {
-      channels: [{
-        channelId: String,
-        time: Number,
-      }],
-      xp: Number,
+      voiceTotalXp: {
+        type: Number,
+        default: 0,
+      },
+      voiceLevel: {
+        type: Number,
+        default: 0,
+      },
     },
     default: {
-      channels: [],
-      xp: 0,
+      voiceTotalXp: 0,
+      voiceLevel: 0,
     },
   },
   messageActivity: {
     type: {
-      channels: [{
-        channelId: String,
-        time: Number,
-      }],
+      chatTotalXp: {
+        type: Number,
+        default: 0,
+      },
+      chatLevel: {
+        type: Number,
+        default: 0,
+      },
     },
     default: {
-      channels: [],
+      chatTotalXp: 0,
+      chatLevel: 0,
     },
   },
   guildActivity: {
