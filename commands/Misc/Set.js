@@ -154,7 +154,7 @@ module.exports = {
                         SetRole(client, interaction, "youtubeRoleId", "youtube");
                         break;
                     }
-                    case "news": {
+                    case "news-role": {
                         SetRole(client, interaction, "newsRoleId", "news");
                         break;
                     }
