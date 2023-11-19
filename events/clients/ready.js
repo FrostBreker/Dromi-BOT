@@ -11,9 +11,7 @@ module.exports = {
 
     //GUILDS FUNCTIONS
     await client.guilds.cache.map(async (g) => {
-      // const guildDB = await client.getGuild(g);
-      const firstInvites = await g.invites.fetch();
-      client.invites.set(g.id, new Collection(firstInvites.map((invite) => [invite.code, invite.uses])));
+      await client.getGuild(g);
 
       //Fetch Members
       const members = await g.members.fetch()

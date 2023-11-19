@@ -50,7 +50,6 @@ client.commands = new Collection();
 client.twitchAPI = new TwicthAPI(client);
 
 //Setup collections
-client.invites = new Collection();
 
 //Setup Handlers
 ['CommandUtil', 'EventUtil'].forEach(handler => { require(`./utils/handlers/${handler}`)(client) });
