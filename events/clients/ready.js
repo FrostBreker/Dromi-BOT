@@ -1,6 +1,7 @@
-const { Collection } = require("discord.js");
 const cron = require("node-cron");
 const { chatLeaderboard, voiceLeaderboard } = require("../../embeds/Leaderboards");
+const { guildId } = require("../../config");
+const { streamEmbed } = require("../../embeds/Twitch");
 module.exports = {
   name: "ready",
   once: true,
@@ -55,6 +56,40 @@ module.exports = {
             }
           };
         };
+      });
+    });
+
+    //STREAMS FUNCTIONS
+    cron.schedule("*/5 * * * *", async () => {
+      const guild = await client.guilds.cache.get(guildId);
+      if (!guild) return;
+
+      const guildDB = await client.getGuild(guild);
+      if (!guildDB) return;
+
+      const twitchSettings = guildDB.settings.twitch;
+      if (!twitchSettings.notification.enabled) return;
+
+      const streamers = await client.getAllStreamers(guildId);
+      if (!streamers) return;
+
+      const channelId = twitchSettings.notification.channelId;
+      if (!channelId) return;
+      const channel = await guild.channels.fetch(channelId);
+      if (!channel) return;
+
+      streamers.forEach(async user => {
+        const { twitchUsername, userId, notification } = user;
+        if (!notification) return;
+        const streamData = await client.twitchAPI.getStreamData(twitchUsername);
+        if (streamData.data[0]) {
+          if (client.currentTwitchStreams.get(userId)) return;
+          return await channel.send({ content: `<@&${guildDB.settings.roles.twitchRoleId}>`, embeds: [streamEmbed(userId, streamData.data[0])] }).then((m) => {
+            client.currentTwitchStreams.set(userId, m.id);
+          })
+        } else {
+          client.currentTwitchStreams.delete(userId);
+        }
       });
     });
   },

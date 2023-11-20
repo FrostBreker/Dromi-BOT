@@ -98,6 +98,7 @@ module.exports = {
             choose: "📥",
             sound: "🔊",
             message: "💬",
+            stats: "📊",
         },
         footer: {
             name: null,

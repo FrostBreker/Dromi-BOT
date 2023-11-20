@@ -53,6 +53,7 @@ client.twitchAPI = new TwicthAPI(client);
 //Setup collections
 client.chatCooldowns = new Collection();
 client.voicesCooldowns = new Collection();
+client.currentTwitchStreams = new Collection();
 
 //Setup Handlers
 ['CommandUtil', 'EventUtil'].forEach(handler => { require(`./utils/handlers/${handler}`)(client) });

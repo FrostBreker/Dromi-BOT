@@ -10,6 +10,16 @@ class TwitchEmbed {
             .setColor(embedOptions.colors.purple)
             .setTimestamp();
     }
+
+    static streamEmbed(userId, { user_login, user_name, game_name, viewer_count, started_at, title, thumbnail_url }) {
+        const embed = new EmbedBuilder()
+            .setTitle(`> ${embedOptions.icons.streamers} ${user_name}`)
+            .setDescription(`<@${userId}> is on Stream!\n**[${title}](https://www.twitch.tv/${user_login})** ${game_name ? `| **${game_name}**` : ""}\n- 👀: ${viewer_count}\n- 🕑: <t:${parseInt((new Date(started_at).getTime()) / 1000)}:R>`)
+            .setColor(embedOptions.colors.info)
+            .setImage(thumbnail_url.replace("{width}", "1920").replace("{height}", "1080"))
+            .setTimestamp();
+        return embed;
+    }
 }
 
 module.exports = TwitchEmbed;

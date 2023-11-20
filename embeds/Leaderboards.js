@@ -9,14 +9,14 @@ class LeaderboardEmbeds {
                 {
                     name: "> Lifetime                     ",
                     value: `${lifetimeData.map(({ userId, totalMessages }, index) => {
-                        return `- <@${userId}>   ▶️   **${totalMessages}**`
+                        return `- <@${userId}> ▶️ **${totalMessages}**`
                     }).join("\n")}`,
                     inline: true,
                 },
                 {
                     name: "> Weekly                     ",
                     value: `${weeklyData.map(({ userId, totalMessages }, index) => {
-                        return `- <@${userId}>   ▶️   **${totalMessages}**`
+                        return `- <@${userId}> ▶️ **${totalMessages}**`
                     }).join("\n")}`,
                     inline: true,
                 }
@@ -33,14 +33,14 @@ class LeaderboardEmbeds {
                 {
                     name: "> Lifetime",
                     value: `${lifetimeData.map(({ userId, totalTime }, index) => {
-                        return `- <@${userId}>   ▶️   **${client.convertMsToTime(totalTime)}**`
+                        return `- <@${userId}> ▶️ **${client.convertMsToTime(totalTime)}**`
                     }).join("\n")}`,
                     inline: true,
                 },
                 {
                     name: "> Weekly",
                     value: `${weeklyData.map(({ userId, totalTime }, index) => {
-                        return `- <@${userId}>   ▶️   **${client.convertMsToTime(totalTime)}**`
+                        return `- <@${userId}> ▶️ **${client.convertMsToTime(totalTime)}**`
                     }).join("\n")}`,
                     inline: true,
                 }

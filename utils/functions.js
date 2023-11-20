@@ -183,6 +183,39 @@ module.exports = async client => {
         }
     };
 
+    //Calculate infamy in roman numerals
+    client.convertToRoman = (num) => {
+        if (num === 0) return "0";
+        const romanNumerals = {
+            1: "I",
+            4: "IV",
+            5: "V",
+            9: "IX",
+            10: "X",
+            40: "XL",
+            50: "L",
+            90: "XC",
+            100: "C",
+            400: "CD",
+            500: "D",
+            900: "CM",
+            1000: "M"
+        };
+
+        let romanNumber = '';
+
+        const keys = Object.keys(romanNumerals).sort((a, b) => b - a);
+
+        for (let i = 0; i < keys.length; i++) {
+            while (num >= keys[i]) {
+                romanNumber += romanNumerals[keys[i]];
+                num -= keys[i];
+            }
+        }
+
+        return romanNumber;
+    };
+
     //STREAMER FUNCTIONS
     //Create streamer
     client.createStreamer = async (guildId, { userId, username, twitchId, twitchUsername, notification }) => {
@@ -243,6 +276,18 @@ module.exports = async client => {
                 choices.push({ name: streamer.twitchUsername, value: streamer.twitchId });
             });
             return choices;
+        } catch (err) {
+            console.log(err);
+            return null;
+        }
+    };
+
+    //Get all streamers
+    client.getAllStreamers = async (guildId) => {
+        try {
+            const streamers = await Streamer.find({ guildId: guildId });
+            if (!streamers) return null;
+            return streamers;
         } catch (err) {
             console.log(err);
             return null;
