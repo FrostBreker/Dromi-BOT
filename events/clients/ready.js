@@ -1,6 +1,6 @@
 const cron = require("node-cron");
 const { chatLeaderboard, voiceLeaderboard } = require("../../embeds/Leaderboards");
-const { guildId } = require("../../config");
+const { guildId, xp: { voice } } = require("../../config");
 const { streamEmbed } = require("../../embeds/Twitch");
 module.exports = {
   name: "ready",
@@ -90,6 +90,31 @@ module.exports = {
         } else {
           client.currentTwitchStreams.delete(userId);
         }
+      });
+    });
+
+    //VOICE STATS
+    cron.schedule("*/1 * * * *", async () => {
+      client.usersInVoice.forEach(async (user) => {
+        const guildDB = await client.getGuild(user.guild);
+        if (!guildDB) return;
+        const timeSpent = Date.now() - user.time;
+        //Update stats
+        await client.updateStats(guildDB, user.userId, "voices", {
+          time: timeSpent,
+          channelId: user.channelId,
+        });
+        //we get the user from the database
+        const userDB = await client.getUser(user.member);
+        //we add xp to the user
+        await client.addXpToUser(userDB, 1 * voice, "voice");
+        client.usersInVoice.set(user.userId, {
+          time: Date.now(),
+          guild: user.guild,
+          channelId: user.channelId,
+          userId: user.userId,
+          member: user.member
+        });
       });
     });
   },
