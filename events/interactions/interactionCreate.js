@@ -1,5 +1,5 @@
 const { errorCommand, newsMakerEmbed, successCommand } = require("../../embeds/Misc");
-const { getNotificationRoleSelectMenu } = require("../../selectMenus/Misc");
+const { getNotificationRoleSelectMenu, getCountryRoleSelectMenu, getAgeRoleSelectMenu, getMusicRoleSelectMenu } = require("../../selectMenus/Misc");
 
 module.exports = {
     name: "interactionCreate",
@@ -58,16 +58,89 @@ module.exports = {
             if (customId[0] === "notificationRoleMenuChooser") {
                 const guild = interaction.guild;
                 const guildDB = await client.getGuild(guild);
-                await interaction.message.edit({ components: [getNotificationRoleSelectMenu(guildDB.settings.roles)] });
+                await interaction.message.edit({ components: [getNotificationRoleSelectMenu(guildDB.settings.roles), getCountryRoleSelectMenu(), getMusicRoleSelectMenu(), getAgeRoleSelectMenu()] });
                 const rolesId = interaction.values;
                 const member = interaction.member;
 
                 for (id of rolesId) {
                     const role = await guild.roles.fetch(id);
                     if (!role) return interaction.reply({ embeds: [errorCommand("Error", "The role does not exist")], ephemeral: true });
-                    await member.roles.add(role);
+                    if (member.roles.cache.has(role.id)) {
+                        await member.roles.remove(role);
+                    } else {
+                        await member.roles.add(role);
+                    }
                 }
-                return interaction.reply({ embeds: [successCommand("Success", `You've successfully received the roles!`)], ephemeral: true });
+                return interaction.reply({ embeds: [successCommand("Success", `You've successfully updated your roles roles!`)], ephemeral: true });
+            } else if (customId[0] === "countryRoleMenuChooser") {
+                const guild = interaction.guild;
+                await interaction.message.edit({ components: [getNotificationRoleSelectMenu(guildDB.settings.roles), getCountryRoleSelectMenu(), getMusicRoleSelectMenu(), getAgeRoleSelectMenu()] });
+                const rolesId = interaction.values;
+                const member = interaction.member;
+
+                const aboveDividerRole = await guild.roles.fetch("830547487285706782");
+                if (!aboveDividerRole) return interaction.reply({ embeds: [errorCommand("Error", "The role does not exist")], ephemeral: true });
+                const belowDividerRole = await guild.roles.fetch("830547596338266173");
+                if (!belowDividerRole) return interaction.reply({ embeds: [errorCommand("Error", "The role does not exist")], ephemeral: true });
+                await member.roles.add(aboveDividerRole);
+                await member.roles.remove(belowDividerRole);
+
+                for (id of rolesId) {
+                    const role = await guild.roles.fetch(id);
+                    if (!role) return interaction.reply({ embeds: [errorCommand("Error", "The role does not exist")], ephemeral: true });
+                    if (member.roles.cache.has(role.id)) {
+                        await member.roles.remove(role);
+                    } else {
+                        await member.roles.add(role);
+                    }
+                }
+                return interaction.reply({ embeds: [successCommand("Success", `You've successfully updated your roles roles!`)], ephemeral: true });
+            } else if (customId[0] === "musicRoleMenuChooser") {
+                const guild = interaction.guild;
+                await interaction.message.edit({ components: [getNotificationRoleSelectMenu(guildDB.settings.roles), getCountryRoleSelectMenu(), getMusicRoleSelectMenu(), getAgeRoleSelectMenu()] });
+                const rolesId = interaction.values;
+                const member = interaction.member;
+
+                const aboveDividerRole = await guild.roles.fetch("830547596338266173");
+                if (!aboveDividerRole) return interaction.reply({ embeds: [errorCommand("Error", "The role does not exist")], ephemeral: true });
+                const belowDividerRole = await guild.roles.fetch("830547601874878464");
+                if (!belowDividerRole) return interaction.reply({ embeds: [errorCommand("Error", "The role does not exist")], ephemeral: true });
+                await member.roles.add(aboveDividerRole);
+                await member.roles.remove(belowDividerRole);
+
+                for (id of rolesId) {
+                    const role = await guild.roles.fetch(id);
+                    if (!role) return interaction.reply({ embeds: [errorCommand("Error", "The role does not exist")], ephemeral: true });
+                    if (member.roles.cache.has(role.id)) {
+                        await member.roles.remove(role);
+                    } else {
+                        await member.roles.add(role);
+                    }
+                }
+                return interaction.reply({ embeds: [successCommand("Success", `You've successfully updated your roles roles!`)], ephemeral: true });
+            } else if (customId[0] === "ageRoleMenuChooser") {
+                const guild = interaction.guild;
+                await interaction.message.edit({ components: [getNotificationRoleSelectMenu(guildDB.settings.roles), getCountryRoleSelectMenu(), getMusicRoleSelectMenu(), getAgeRoleSelectMenu()] });
+                const rolesId = interaction.values;
+                const member = interaction.member;
+
+                const aboveDividerRole = await guild.roles.fetch("830547601874878464");
+                if (!aboveDividerRole) return interaction.reply({ embeds: [errorCommand("Error", "The role does not exist")], ephemeral: true });
+                const belowDividerRole = await guild.roles.fetch("830547605410676746");
+                if (!belowDividerRole) return interaction.reply({ embeds: [errorCommand("Error", "The role does not exist")], ephemeral: true });
+                await member.roles.add(aboveDividerRole);
+                await member.roles.remove(belowDividerRole);
+
+                for (id of rolesId) {
+                    const role = await guild.roles.fetch(id);
+                    if (!role) return interaction.reply({ embeds: [errorCommand("Error", "The role does not exist")], ephemeral: true });
+                    if (member.roles.cache.has(role.id)) {
+                        await member.roles.remove(role);
+                    } else {
+                        await member.roles.add(role);
+                    }
+                }
+                return interaction.reply({ embeds: [successCommand("Success", `You've successfully updated your roles roles!`)], ephemeral: true });
             }
         }
     }
