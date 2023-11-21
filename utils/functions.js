@@ -154,17 +154,17 @@ module.exports = async client => {
             if (amount <= 0) return 401;
             let hasPassed = false;
             if (type === "chat") {
-                const oldRank = client.calculateXpLevel(user.chatTotalXp);
+                const oldRank = client.calculateXpLevel(user.messageActivity.chatTotalXp);
                 user.messageActivity.chatTotalXp += amount;
-                const newRank = client.calculateXpLevel(user.chatTotalXp);
+                const newRank = client.calculateXpLevel(user.messageActivity.chatTotalXp);
                 if (newRank > oldRank) {
                     hasPassed = true;
                     user.messageActivity.chatLevel = newRank;
                 }
             } else {
-                const oldRank = client.calculateXpLevel(user.voiceTotalXp);
+                const oldRank = client.calculateXpLevel(user.voiceActivity.voiceTotalXp);
                 user.voiceActivity.voiceTotalXp += amount;
-                const newRank = client.calculateXpLevel(user.voiceTotalXp);
+                const newRank = client.calculateXpLevel(user.voiceActivity.voiceTotalXp);
                 if (newRank > oldRank) {
                     hasPassed = true;
                     user.voiceActivity.voiceLevel = newRank;
