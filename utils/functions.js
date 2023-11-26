@@ -517,7 +517,7 @@ module.exports = async client => {
             }, []);
 
             const usersWithTotalMessagesSorted = filtered.sort((a, b) => b.totalMessages - a.totalMessages);
-            const top10 = usersWithTotalMessagesSorted.slice(0, 10);
+            const top10 = usersWithTotalMessagesSorted.slice(0, 6);
             return top10;
         } catch (err) {
             return null;
@@ -558,7 +558,7 @@ module.exports = async client => {
             }, []);
 
             const usersWithTotalMessagesSorted = filtered.sort((a, b) => b.totalMessages - a.totalMessages);
-            const top10 = usersWithTotalMessagesSorted.slice(0, 10);
+            const top10 = usersWithTotalMessagesSorted.slice(0, 6);
             return top10;
         } catch (err) {
             return null;
@@ -595,7 +595,7 @@ module.exports = async client => {
             }, []);
 
             const usersWithTotalTimeSorted = filtered.sort((a, b) => b.totalTime - a.totalTime);
-            const top10 = usersWithTotalTimeSorted.slice(0, 10);
+            const top10 = usersWithTotalTimeSorted.slice(0, 6);
             return top10;
         } catch (err) {
             return null;
@@ -637,7 +637,7 @@ module.exports = async client => {
             }, []);
 
             const usersWithTotalTimeSorted = filtered.sort((a, b) => b.totalTime - a.totalTime);
-            const top10 = usersWithTotalTimeSorted.slice(0, 10);
+            const top10 = usersWithTotalTimeSorted.slice(0, 6);
             return top10;
         } catch (err) {
             return null;
@@ -846,6 +846,9 @@ module.exports = async client => {
         const minutesStr = minutesLeft ? `${minutesLeft} minute${minutesLeft > 1 ? "s" : ""}` : "";
         const secondsStr = secondsLeft ? `${secondsLeft} second${secondsLeft > 1 ? "s" : ""}` : "";
 
-        return `${daysStr} ${hoursStr} ${minutesStr} ${secondsStr}`;
+        if (daysStr === "" && hoursStr === "" && minutesStr === "") return secondsStr;
+        if (daysStr === "" && hoursStr === "") return `${minutesStr} ${secondsStr}`;
+        if (daysStr === "") return `${hoursStr} ${minutesStr}`;
+        return `${daysStr} ${hoursStr}`;
     };
 };
