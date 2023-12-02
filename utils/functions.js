@@ -517,7 +517,7 @@ module.exports = async client => {
             }, []);
 
             const usersWithTotalMessagesSorted = filtered.sort((a, b) => b.totalMessages - a.totalMessages);
-            const top10 = usersWithTotalMessagesSorted.slice(0, 6);
+            const top10 = usersWithTotalMessagesSorted.slice(0, 10);
             return top10;
         } catch (err) {
             return null;
@@ -558,7 +558,7 @@ module.exports = async client => {
             }, []);
 
             const usersWithTotalMessagesSorted = filtered.sort((a, b) => b.totalMessages - a.totalMessages);
-            const top10 = usersWithTotalMessagesSorted.slice(0, 6);
+            const top10 = usersWithTotalMessagesSorted.slice(0, 10);
             return top10;
         } catch (err) {
             return null;
@@ -595,7 +595,7 @@ module.exports = async client => {
             }, []);
 
             const usersWithTotalTimeSorted = filtered.sort((a, b) => b.totalTime - a.totalTime);
-            const top10 = usersWithTotalTimeSorted.slice(0, 6);
+            const top10 = usersWithTotalTimeSorted.slice(0, 10);
             return top10;
         } catch (err) {
             return null;
@@ -637,7 +637,7 @@ module.exports = async client => {
             }, []);
 
             const usersWithTotalTimeSorted = filtered.sort((a, b) => b.totalTime - a.totalTime);
-            const top10 = usersWithTotalTimeSorted.slice(0, 6);
+            const top10 = usersWithTotalTimeSorted.slice(0, 10);
             return top10;
         } catch (err) {
             return null;

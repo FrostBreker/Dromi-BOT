@@ -35,11 +35,11 @@ module.exports = {
                 },
                 {
                     name: "Chat Level",
-                    value: `**LVL: ${client.convertToRoman(userDB.messageActivity.chatLevel)}** | Current XP: **${userDB.messageActivity.chatTotalXp}**. XP needed to level up: **${client.calculateRemainingXpToNextLevel(userDB.messageActivity.chatTotalXp)}**`,
+                    value: `**LVL: ${userDB.messageActivity.chatLevel}** | Current XP: **${userDB.messageActivity.chatTotalXp}**. XP needed to level up: **${client.calculateRemainingXpToNextLevel(userDB.messageActivity.chatTotalXp)}**`,
                 },
                 {
                     name: "Voices Level",
-                    value: `**LVL: ${client.convertToRoman(userDB.voiceActivity.voiceLevel)}** | Current XP: **${userDB.voiceActivity.voiceTotalXp}**. XP needed to level up: **${client.calculateRemainingXpToNextLevel(userDB.voiceActivity.voiceTotalXp)}**`,
+                    value: `**LVL: ${userDB.voiceActivity.voiceLevel}** | Current XP: **${userDB.voiceActivity.voiceTotalXp}**. XP needed to level up: **${client.calculateRemainingXpToNextLevel(userDB.voiceActivity.voiceTotalXp)}**`,
                 }
             )
             .setTimestamp()
